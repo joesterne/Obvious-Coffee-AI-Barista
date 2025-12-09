@@ -204,23 +204,27 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
                           className={`
                               relative flex gap-4 p-4 rounded-xl text-sm transition-all duration-500 border
                               ${isCurrent 
-                                  ? 'bg-coffee-600 text-white border-coffee-600 shadow-xl shadow-coffee-200 scale-105 z-10' 
+                                  ? 'bg-coffee-600 text-white border-coffee-600 shadow-xl shadow-coffee-200 scale-105 z-10 ring-2 ring-coffee-400 ring-offset-2' 
                                   : isNext 
-                                      ? 'bg-amber-50 text-coffee-900 border-amber-200 opacity-90'
+                                      ? 'bg-amber-50 text-coffee-900 border-amber-200 opacity-90 translate-x-2'
                                       : isPast
-                                          ? 'bg-transparent text-coffee-300 border-transparent opacity-60' 
-                                          : 'bg-white text-coffee-500 border-transparent opacity-70'
+                                          ? 'bg-transparent text-coffee-300 border-transparent opacity-50 grayscale' 
+                                          : 'bg-white text-coffee-500 border-transparent opacity-60'
                               }
                           `}
                       >
                           {/* Time Indicator */}
-                          <div className={`font-mono font-bold w-12 shrink-0 flex flex-col items-center justify-center rounded-lg ${isCurrent ? 'bg-white/20 text-white' : 'bg-coffee-50 text-coffee-400'}`}>
+                          <div className={`font-mono font-bold w-12 shrink-0 flex flex-col items-center justify-center rounded-lg transition-colors ${isCurrent ? 'bg-white/20 text-white' : 'bg-coffee-50 text-coffee-400'}`}>
                               <span>{formatTime(step.timeStart)}</span>
                           </div>
 
                           <div className="flex-1 flex flex-col justify-center">
                               <div className="flex items-center gap-2">
-                                  {isNext && <span className="text-[10px] uppercase font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">Up Next</span>}
+                                  {isNext && (
+                                    <span className="animate-pulse text-[10px] uppercase font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                      Next <ArrowRight size={8} />
+                                    </span>
+                                  )}
                                   <span className={`font-bold text-base block ${isCurrent ? 'text-white' : 'text-coffee-800'}`}>{step.action}</span>
                               </div>
                               <span className={`block mt-1 ${isCurrent ? 'text-coffee-100' : 'text-coffee-500'}`}>{step.description}</span>
@@ -233,7 +237,12 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
                           )}
                           
                           {isCurrent && (
-                              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-r-[8px] border-r-coffee-600 border-b-[8px] border-b-transparent md:hidden"></div>
+                              <div className="absolute right-2 top-2">
+                                 <span className="relative flex h-3 w-3">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                                </span>
+                              </div>
                           )}
                       </div>
                   );

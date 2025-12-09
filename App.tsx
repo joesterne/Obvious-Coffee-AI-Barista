@@ -5,7 +5,7 @@ import * as GeminiService from './services/geminiService';
 import BrewTimer from './components/BrewTimer';
 import BrewMethodDiagram from './components/BrewMethodDiagram';
 import RoastingDiagram from './components/RoastingDiagram';
-import { Coffee, Wind, Droplets, Thermometer, Clock, MessageSquare, ChevronLeft, Send, Sparkles, BookOpen, Check, Sliders, Video, Film, Upload, Loader2, Play, Heart, Trash2, Calendar, ArrowRight, Scale, Flame, Globe, Factory, Info, X, FlaskConical, Palette } from 'lucide-react';
+import { Coffee, Wind, Droplets, Thermometer, Clock, MessageSquare, ChevronLeft, Send, Sparkles, BookOpen, Check, Sliders, Video, Film, Upload, Loader2, Play, Heart, Trash2, Calendar, ArrowRight, Scale, Flame, Globe, Factory, Info, X, FlaskConical, Palette, History as HistoryIcon, RotateCcw } from 'lucide-react';
 
 // Icons for features
 const FeatureCard = ({ icon: Icon, title, description, onClick }: { icon: any, title: string, description: string, onClick: () => void }) => (
@@ -39,6 +39,14 @@ const App = () => {
     try {
       const saved = localStorage.getItem('barista-ai-favorites');
       return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [historyItems, setHistoryItems] = useState<Recipe[]>(() => {
+    try {
+      const history = localStorage.getItem('barista-ai-history');
+      return history ? JSON.parse(history) : [];
     } catch (e) {
       return [];
     }
@@ -89,6 +97,20 @@ const App = () => {
     });
   };
 
+  const addToHistory = (newRecipe: Recipe) => {
+    const historyItem = { ...newRecipe, id: crypto.randomUUID(), dateSaved: Date.now() };
+    const updatedHistory = [historyItem, ...historyItems].slice(0, 20); // Keep last 20
+    setHistoryItems(updatedHistory);
+    localStorage.setItem('barista-ai-history', JSON.stringify(updatedHistory));
+  };
+
+  const handleClearHistory = () => {
+    if (confirm('Are you sure you want to clear your brew history?')) {
+      setHistoryItems([]);
+      localStorage.removeItem('barista-ai-history');
+    }
+  };
+
   const handleGenerateRecipe = async (methodId: string) => {
     setSelectedMethodId(methodId);
     const method = BREW_METHODS.find(m => m.id === methodId);
@@ -103,6 +125,7 @@ const App = () => {
       const result = await GeminiService.generateRecipe(method.name, profile, profile.tastingNotes);
       setRecipe(result);
       setOriginalRecipe(result);
+      addToHistory(result);
     } catch (e) {
       console.error(e);
       alert("Failed to generate recipe. Please try again.");
@@ -165,6 +188,15 @@ const App = () => {
         setSelectedLatteArtId(savedItem.id);
         setCurrentView(View.LATTE_ART);
       }
+  };
+
+  const handleLoadHistoryItem = (historyItem: Recipe) => {
+      setRecipe(historyItem);
+      setOriginalRecipe(historyItem);
+      setShowRatioInfo(false);
+      const method = BREW_METHODS.find(m => m.name.toLowerCase() === historyItem.method.toLowerCase() || historyItem.method.toLowerCase().includes(m.name.toLowerCase()));
+      setSelectedMethodId(method ? method.id : 'v60');
+      setCurrentView(View.BREW_GUIDE);
   };
 
   const handleTimeAdjustment = (newTotalSeconds: number) => {
@@ -361,7 +393,7 @@ const App = () => {
           <Coffee className="text-coffee-600" />
           <span>OBVIOUS COFFEE</span>
         </button>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
              {currentView !== View.HOME && (
               <button 
                 onClick={() => setCurrentView(View.HOME)}
@@ -371,8 +403,17 @@ const App = () => {
               </button>
             )}
             <button
+               onClick={() => setCurrentView(View.HISTORY)}
+               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${currentView === View.HISTORY ? 'bg-coffee-100 text-coffee-800' : 'text-coffee-600 hover:text-coffee-900 hover:bg-coffee-50'}`}
+               title="Brew History"
+            >
+               <HistoryIcon size={16} className={currentView === View.HISTORY ? "text-coffee-800" : ""} /> 
+               <span className="hidden sm:inline">History</span>
+            </button>
+            <button
                onClick={() => setCurrentView(View.FAVORITES)}
                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${currentView === View.FAVORITES ? 'bg-coffee-100 text-coffee-800' : 'text-coffee-600 hover:text-coffee-900 hover:bg-coffee-50'}`}
+               title="Favorites"
             >
                <Heart size={16} className={currentView === View.FAVORITES ? "fill-coffee-600 text-coffee-600" : ""} /> 
                <span className="hidden sm:inline">Favorites</span>
@@ -431,12 +472,81 @@ const App = () => {
           onClick={() => setCurrentView(View.VIDEO_STUDIO)}
         />
         <FeatureCard 
+          icon={HistoryIcon}
+          title="Brew History"
+          description="Automatically save your generated recipes. Revisit your past brews."
+          onClick={() => setCurrentView(View.HISTORY)}
+        />
+        <FeatureCard 
           icon={Heart}
           title="Your Favorites"
           description="Access your saved recipes. Revisit your perfect brews anytime."
           onClick={() => setCurrentView(View.FAVORITES)}
         />
       </div>
+    </div>
+  );
+
+  const renderHistory = () => (
+    <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+           <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Brew History</h2>
+           <p className="text-coffee-600">Your recent generations.</p>
+        </div>
+        {historyItems.length > 0 && (
+           <button 
+              onClick={handleClearHistory}
+              className="flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium"
+           >
+              <Trash2 size={16} /> Clear History
+           </button>
+        )}
+      </div>
+
+      {historyItems.length === 0 ? (
+          <div className="text-center py-20 bg-coffee-50/50 rounded-2xl border border-dashed border-coffee-200">
+              <HistoryIcon size={48} className="mx-auto text-coffee-300 mb-4" />
+              <h3 className="text-xl font-medium text-coffee-800">No brewing history</h3>
+              <p className="text-coffee-500 mb-6">Generated recipes will automatically appear here.</p>
+              <button 
+                  onClick={() => setCurrentView(View.BREW_GUIDE)}
+                  className="bg-coffee-600 text-white px-6 py-2 rounded-full font-bold hover:bg-coffee-700 transition-colors"
+              >
+                  Generate a Recipe
+              </button>
+          </div>
+      ) : (
+          <div className="space-y-4">
+              {historyItems.map((item) => (
+                  <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex items-center justify-between hover:border-coffee-300 transition-all group">
+                      <div className="flex items-center gap-4 overflow-hidden">
+                          <div className="bg-coffee-50 p-3 rounded-lg text-coffee-600 flex-shrink-0">
+                              <Droplets size={20} />
+                          </div>
+                          <div className="min-w-0">
+                              <h3 className="font-brand font-bold text-coffee-900 uppercase truncate">{item.method}</h3>
+                              <p className="text-xs text-coffee-500 truncate">{item.description}</p>
+                              <div className="flex gap-3 mt-1 text-[10px] text-coffee-400 font-mono uppercase">
+                                  <span>{new Date(item.dateSaved || 0).toLocaleString()}</span>
+                                  <span>{item.coffeeAmount}g / {item.waterAmount}g</span>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                         <button 
+                            onClick={() => handleLoadHistoryItem(item)}
+                            className="p-2 text-coffee-500 hover:text-coffee-800 hover:bg-coffee-50 rounded-full transition-colors"
+                            title="Load Recipe"
+                         >
+                            <ArrowRight size={20} />
+                         </button>
+                      </div>
+                  </div>
+              ))}
+          </div>
+      )}
     </div>
   );
 
@@ -1050,6 +1160,14 @@ const App = () => {
                     <p className="text-coffee-200 text-lg leading-relaxed max-w-3xl">{recipe.description}</p>
                 </div>
 
+                {/* Recipe Overview Header */}
+                <div className="border-b border-coffee-100 bg-coffee-50/30 px-6 py-2">
+                   <h3 className="text-xs font-bold text-coffee-400 uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-coffee-400"></span>
+                      Recipe Overview
+                   </h3>
+                </div>
+
                 {/* Recipe Overview - Clean Grid Layout */}
                 <div className="grid grid-cols-2 md:grid-cols-4 border-b border-coffee-100 divide-x divide-coffee-100/50 bg-white">
                     <div className="p-6 text-center group hover:bg-coffee-50 transition-colors">
@@ -1091,7 +1209,7 @@ const App = () => {
                             </button>
 
                             {showRatioInfo && (
-                                <div className="absolute bottom-full left-0 mb-2 z-20 w-80 bg-white p-5 rounded-xl shadow-xl border border-coffee-200 text-left animate-fade-in origin-bottom-left">
+                                <div className="absolute bottom-full left-0 mb-2 z-20 w-80 sm:w-96 bg-white p-5 rounded-xl shadow-xl border border-coffee-200 text-left animate-fade-in origin-bottom-left">
                                     <div className="flex justify-between items-start mb-3">
                                         <h4 className="font-bold text-coffee-800 text-sm flex items-center gap-2">
                                             <FlaskConical size={14} className="text-coffee-500"/>
@@ -1111,6 +1229,27 @@ const App = () => {
                                             <p className="text-[10px] font-bold text-coffee-700 mb-1">Low Ratio (Less Water)</p>
                                             <p className="text-[10px] text-coffee-600">Water saturates quickly with easy-to-dissolve acids/sugars, often slowing extraction before heavy tannins dissolve.</p>
                                         </div>
+                                    </div>
+
+                                    {/* Expanded Grind Interaction Section */}
+                                    <div className="mt-4 pt-3 border-t border-coffee-100">
+                                        <h4 className="font-bold text-coffee-800 text-sm flex items-center gap-2 mb-2">
+                                            <Wind size={14} className="text-coffee-500"/>
+                                            Grind Interaction
+                                        </h4>
+                                         <p className="text-xs text-coffee-600 mb-3 leading-relaxed">
+                                            Ratio changes how much solvent passes through the bed. Grind size controls how fast water flows and how much surface area is exposed.
+                                        </p>
+                                         <div className="grid grid-cols-2 gap-2">
+                                             <div className="bg-coffee-50 p-2 rounded-lg">
+                                                <p className="text-[10px] font-bold text-coffee-700 mb-1">Wider Ratio (1:17+)</p>
+                                                 <p className="text-[10px] text-coffee-600">More solvent. Grind <strong>Coarser</strong> to prevent over-extraction.</p>
+                                             </div>
+                                             <div className="bg-coffee-50 p-2 rounded-lg">
+                                                 <p className="text-[10px] font-bold text-coffee-700 mb-1">Tighter Ratio (1:15-)</p>
+                                                 <p className="text-[10px] text-coffee-600">Less solvent. Grind <strong>Finer</strong> to maximize extraction.</p>
+                                             </div>
+                                         </div>
                                     </div>
                                     <div className="absolute bottom-[-6px] left-6 w-3 h-3 bg-white border-b border-r border-coffee-200 rotate-45"></div>
                                 </div>
@@ -1438,6 +1577,7 @@ const App = () => {
         {currentView === View.TUTOR && renderTutor()}
         {currentView === View.VIDEO_STUDIO && renderVideoStudio()}
         {currentView === View.FAVORITES && renderFavorites()}
+        {currentView === View.HISTORY && renderHistory()}
       </main>
     </div>
   );
