@@ -253,7 +253,9 @@ const App = () => {
         const response = await fetch(method?.image || 'https://picsum.photos/400/300');
         const imageBlob = await response.blob();
         
-        const prompt = `Cinematic video of preparing coffee using ${recipe.method}. Close up shot of hot water pouring onto coffee grounds. ${recipe.description}. High quality, 4k, slow motion.`;
+        // Instructional prompt
+        const stepsPreview = recipe.steps.slice(0, 3).map(s => s.action).join(', ');
+        const prompt = `Instructional close-up video showing how to brew ${recipe.method}. Demonstrating key steps: ${stepsPreview}. Professional barista technique, 4k, detailed, photorealistic.`;
         
         const url = await GeminiService.generateBrewVideo(imageBlob, prompt);
         setRecipeVideoUrl(url);
@@ -1313,9 +1315,9 @@ const App = () => {
                     <p className="text-coffee-500 text-xs max-w-sm">Ensure your equipment is clean and pre-heated.</p>
                 </div>
 
-                {/* AI Video Preview */}
-                <div className="p-6 bg-black rounded-2xl border border-coffee-900 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-                    <h3 className="text-white/60 font-bold uppercase tracking-widest text-xs mb-6 z-10">AI Video Visualization</h3>
+                {/* AI Video Preview - INSTRUCTIONAL */}
+                <div className="p-6 bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-coffee-900 flex flex-col items-center justify-center text-center relative overflow-hidden group min-h-[300px]">
+                    <h3 className="text-white/80 font-bold uppercase tracking-widest text-xs mb-6 z-10">AI Recipe Demonstration</h3>
                     
                     {recipeVideoUrl ? (
                          <video 
@@ -1330,18 +1332,21 @@ const App = () => {
                             {isGeneratingRecipeVideo ? (
                                 <>
                                     <Loader2 className="animate-spin text-coffee-400 mb-4" size={32} />
-                                    <p className="text-white/80 text-sm">Generating Veo Preview...</p>
-                                    <p className="text-white/40 text-xs mt-1">This takes about 1-2 minutes</p>
+                                    <p className="text-white/80 text-sm">Generating instructional preview...</p>
+                                    <p className="text-white/40 text-xs mt-1">Simulating brewing steps with Veo</p>
                                 </>
                             ) : (
                                 <>
-                                    <Film className="text-coffee-400 mb-4" size={32} />
-                                    <p className="text-white/80 text-sm mb-4">Visualize this specific recipe with AI</p>
+                                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-sm border border-white/10">
+                                       <Play className="text-white ml-1" size={24} fill="currentColor" />
+                                    </div>
+                                    <p className="text-white/90 font-bold text-lg mb-2">Watch How to Brew</p>
+                                    <p className="text-white/60 text-xs mb-6 max-w-xs">Generate an AI visualization of this specific technique.</p>
                                     <button 
                                         onClick={handleGenerateRecipeVideo}
-                                        className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-semibold backdrop-blur-sm transition-all"
+                                        className="bg-coffee-600 hover:bg-coffee-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-coffee-900/50 transition-all transform hover:scale-105"
                                     >
-                                        Generate Preview
+                                        Generate Video
                                     </button>
                                 </>
                             )}
@@ -1369,30 +1374,31 @@ const App = () => {
            {/* Step 1: Image Upload */}
            <div className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100">
               <h3 className="font-bold text-coffee-800 mb-4 flex items-center gap-2">
-                <span className="bg-coffee-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-                Upload Source Image
+                <span className="bg-coffee-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                Upload Reference
               </h3>
               
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl h-64 flex flex-col items-center justify-center cursor-pointer transition-all ${
-                  selectedImagePreview ? 'border-coffee-400 bg-coffee-50' : 'border-coffee-200 hover:border-coffee-400 hover:bg-coffee-50'
-                }`}
+                className={`
+                   border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer transition-all
+                   ${selectedImagePreview ? 'border-coffee-300 bg-coffee-50' : 'border-coffee-200 hover:border-coffee-400 hover:bg-coffee-50'}
+                `}
               >
                  {selectedImagePreview ? (
-                   <img src={selectedImagePreview} alt="Preview" className="h-full w-full object-contain rounded-lg p-2" />
+                   <img src={selectedImagePreview} alt="Preview" className="h-full w-full object-contain p-2" />
                  ) : (
                    <div className="text-center p-4">
-                     <Upload className="mx-auto text-coffee-400 mb-2" size={32} />
-                     <p className="text-coffee-600 font-medium">Click to upload photo</p>
-                     <p className="text-xs text-coffee-400 mt-1">Upload your coffee setup or beans</p>
+                      <Upload className="mx-auto text-coffee-300 mb-2" />
+                      <p className="text-coffee-500 text-sm font-medium">Click to upload photo</p>
+                      <p className="text-coffee-400 text-xs mt-1">PNG or JPG</p>
                    </div>
                  )}
                  <input 
-                   type="file" 
                    ref={fileInputRef}
+                   type="file" 
+                   accept="image/*" 
                    onChange={handleImageSelect}
-                   accept="image/*"
                    className="hidden"
                  />
               </div>
@@ -1401,70 +1407,125 @@ const App = () => {
            {/* Step 2: Prompt */}
            <div className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100">
               <h3 className="font-bold text-coffee-800 mb-4 flex items-center gap-2">
-                <span className="bg-coffee-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-                Describe the Scene
+                <span className="bg-coffee-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                Describe Scene
               </h3>
-              <textarea 
+              <textarea
                 value={videoPrompt}
                 onChange={(e) => setVideoPrompt(e.target.value)}
-                className="w-full p-3 bg-coffee-50 border border-coffee-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-coffee-400 min-h-[100px] text-coffee-800 text-sm"
-                placeholder="Describe how the coffee should look (e.g., 'Slow motion pour over, blooming bubbles, steam rising')"
+                className="w-full p-4 bg-coffee-50 border border-coffee-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-400 min-h-[120px] text-coffee-800"
+                placeholder="Describe camera movement, lighting, and action..."
               />
               <button 
                 onClick={handleGenerateVideo}
                 disabled={isGeneratingVideo || !selectedImage}
-                className="w-full mt-4 bg-coffee-600 text-white py-3 rounded-lg font-semibold hover:bg-coffee-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                className={`w-full mt-4 py-3 rounded-full font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
+                  isGeneratingVideo || !selectedImage
+                  ? 'bg-coffee-200 text-coffee-400 cursor-not-allowed'
+                  : 'bg-coffee-600 hover:bg-coffee-700 text-white hover:scale-105'
+                }`}
               >
                 {isGeneratingVideo ? (
-                  <><Loader2 className="animate-spin" size={20} /> Generating Video...</>
+                  <>
+                     <Loader2 className="animate-spin" /> Generating...
+                  </>
                 ) : (
-                  <><Video size={20} /> Generate with Veo</>
+                  <>
+                     <Film size={20} /> Generate Video
+                  </>
                 )}
               </button>
-              <p className="text-xs text-coffee-400 mt-2 text-center">
-                *Requires a paid API key. You will be prompted to select one.
-              </p>
            </div>
         </div>
 
-        {/* Output Area */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100 flex flex-col">
-            <h3 className="font-bold text-coffee-800 mb-4 flex items-center gap-2">
-               <span className="bg-coffee-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
-               Result
-            </h3>
-            
-            <div className="flex-1 bg-black rounded-xl overflow-hidden flex items-center justify-center relative min-h-[300px]">
-               {isGeneratingVideo ? (
-                 <div className="text-center text-white/80 p-6">
-                    <Loader2 className="animate-spin w-12 h-12 mx-auto mb-4 text-coffee-400" />
-                    <p className="font-medium text-lg animate-pulse">{videoLoadingMessage}</p>
-                    <p className="text-xs mt-2 opacity-60">This may take 1-2 minutes.</p>
-                 </div>
-               ) : generatedVideoUrl ? (
-                 <video 
-                   src={generatedVideoUrl} 
-                   controls 
-                   autoPlay 
-                   loop 
-                   className="w-full h-full object-contain"
-                 />
-               ) : (
-                 <div className="text-center text-white/30">
-                    <Film size={48} className="mx-auto mb-2" />
-                    <p>Generated video will appear here</p>
-                 </div>
-               )}
-            </div>
-            {generatedVideoUrl && (
-              <a 
-                href={generatedVideoUrl} 
-                download="brew-video.mp4"
-                className="mt-4 text-center text-sm text-coffee-600 hover:text-coffee-800 underline"
-              >
-                Download Video
-              </a>
-            )}
+        {/* Video Output */}
+        <div className="bg-black rounded-2xl overflow-hidden shadow-2xl min-h-[400px] flex items-center justify-center relative">
+           {isGeneratingVideo && (
+              <div className="text-center z-10 p-6">
+                 <Loader2 className="animate-spin text-coffee-400 mx-auto mb-4 w-12 h-12" />
+                 <p className="text-white font-medium text-lg animate-pulse">{videoLoadingMessage}</p>
+                 <p className="text-white/40 text-sm mt-2">This may take a minute...</p>
+              </div>
+           )}
+           
+           {!isGeneratingVideo && generatedVideoUrl && (
+              <video 
+                src={generatedVideoUrl} 
+                controls 
+                autoPlay 
+                loop 
+                className="w-full h-full object-contain"
+              />
+           )}
+
+           {!isGeneratingVideo && !generatedVideoUrl && (
+              <div className="text-center text-white/30 p-8">
+                 <Film size={64} className="mx-auto mb-4 opacity-50" />
+                 <p className="text-lg font-medium">Ready to render</p>
+                 <p className="text-sm mt-2 max-w-xs mx-auto">Upload an image and click generate to create a Veo video.</p>
+              </div>
+           )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTutor = () => (
+    <div className="max-w-2xl mx-auto px-6 py-8 h-[calc(100vh-80px)] flex flex-col">
+      <div className="mb-6 flex-shrink-0">
+        <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Barista Tutor</h2>
+        <p className="text-coffee-600">Expert advice on demand.</p>
+      </div>
+
+      <div className="flex-1 bg-white rounded-2xl shadow-sm border border-coffee-100 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+           {chatHistory.length === 0 && (
+              <div className="text-center py-10 text-coffee-400">
+                 <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
+                 <p>Ask me about grind size, extraction issues, or gear recommendations!</p>
+              </div>
+           )}
+           {chatHistory.map((msg, i) => (
+             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+               <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
+                 msg.role === 'user' 
+                 ? 'bg-coffee-600 text-white rounded-tr-none' 
+                 : 'bg-coffee-50 text-coffee-800 rounded-tl-none'
+               }`}>
+                 {msg.content}
+               </div>
+             </div>
+           ))}
+           {isChatting && (
+             <div className="flex justify-start">
+               <div className="bg-coffee-50 p-4 rounded-2xl rounded-tl-none flex gap-1">
+                 <span className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce"></span>
+                 <span className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                 <span className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+               </div>
+             </div>
+           )}
+           <div ref={chatEndRef} />
+        </div>
+        
+        <div className="p-4 border-t border-coffee-100 bg-coffee-50/50">
+           <div className="flex gap-2">
+             <input
+               type="text"
+               value={chatInput}
+               onChange={(e) => setChatInput(e.target.value)}
+               onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
+               placeholder="Why is my coffee bitter?"
+               className="flex-1 p-3 border border-coffee-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-400"
+             />
+             <button 
+               onClick={handleChatSend}
+               disabled={!chatInput.trim() || isChatting}
+               className="bg-coffee-600 text-white p-3 rounded-xl hover:bg-coffee-700 disabled:opacity-50 transition-colors"
+             >
+               <Send size={20} />
+             </button>
+           </div>
         </div>
       </div>
     </div>
@@ -1472,112 +1533,53 @@ const App = () => {
 
   const renderFlavorExplorer = () => (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Flavor Explorer</h2>
-        <p className="text-coffee-600">Understand the 'Why' behind the taste.</p>
+        <p className="text-coffee-600">Understand the chemistry of taste.</p>
       </div>
 
       {renderBeanSelector()}
 
       <div className="flex justify-center mb-8">
-        <button 
+        <button
           onClick={handleExplainFlavor}
           disabled={isExplaining}
-          className="bg-coffee-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-coffee-700 disabled:opacity-50 transition-all shadow-lg flex items-center gap-2"
+          className="bg-coffee-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-coffee-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          {isExplaining ? <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div> : <Sparkles size={18} />}
-          Analyze Profile
+           {isExplaining ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
+           Analyze Profile
         </button>
       </div>
 
       {flavorExplanation && (
-        <div className="bg-white p-8 rounded-2xl shadow-lg border border-coffee-100 animate-fade-in">
-          <h3 className="text-xl font-brand font-bold text-coffee-800 mb-4 uppercase">Sensory Analysis</h3>
-          <div className="prose prose-coffee text-coffee-700 leading-relaxed">
-             {flavorExplanation.split('\n').map((line, i) => <p key={i} className="mb-3">{line}</p>)}
-          </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 animate-fade-in">
+           <h3 className="text-xl font-brand font-bold text-coffee-900 mb-4 flex items-center gap-2">
+              <BookOpen size={24} className="text-coffee-500"/>
+              Sensory Analysis
+           </h3>
+           <div className="prose prose-coffee max-w-none text-coffee-700 leading-relaxed">
+              {flavorExplanation.split('\n').map((para, i) => (
+                 <p key={i} className="mb-4">{para}</p>
+              ))}
+           </div>
         </div>
       )}
     </div>
   );
 
-  const renderTutor = () => (
-    <div className="max-w-4xl mx-auto px-4 py-4 h-[calc(100vh-80px)] flex flex-col">
-       <div className="flex-none mb-4 px-2">
-        <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Barista Tutor</h2>
-        <p className="text-coffee-600">Ask about troubleshooting, gear, or coffee theory.</p>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto bg-white rounded-2xl shadow-sm border border-coffee-100 p-4 mb-4">
-        {chatHistory.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-coffee-400 opacity-60">
-            <MessageSquare size={48} className="mb-4" />
-            <p className="text-lg font-medium">Start a conversation...</p>
-            <p className="text-sm">"Why is my V60 stalling?"</p>
-            <p className="text-sm">"What's the difference between washed and natural?"</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {chatHistory.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div 
-                  className={`max-w-[85%] p-4 rounded-2xl ${
-                    msg.role === 'user' 
-                    ? 'bg-coffee-600 text-white rounded-br-sm' 
-                    : 'bg-coffee-50 text-coffee-800 border border-coffee-100 rounded-bl-sm'
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              </div>
-            ))}
-             {isChatting && (
-              <div className="flex justify-start">
-                 <div className="bg-coffee-50 p-4 rounded-2xl rounded-bl-sm border border-coffee-100 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce delay-75"></div>
-                    <div className="w-2 h-2 bg-coffee-400 rounded-full animate-bounce delay-150"></div>
-                 </div>
-              </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-none relative">
-        <input 
-          type="text" 
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleChatSend()}
-          placeholder="Ask your coffee question..." 
-          className="w-full pl-6 pr-14 py-4 rounded-full border border-coffee-200 focus:outline-none focus:ring-2 focus:ring-coffee-400 focus:border-transparent shadow-sm text-coffee-800 bg-white"
-        />
-        <button 
-          onClick={handleChatSend}
-          disabled={!chatInput.trim() || isChatting}
-          className="absolute right-2 top-2 p-2 bg-coffee-600 text-white rounded-full hover:bg-coffee-700 disabled:opacity-50 transition-colors"
-        >
-          <Send size={20} />
-        </button>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen pb-10">
+    <div className="min-h-screen pb-20">
       {renderHeader()}
       <main>
         {currentView === View.HOME && renderHome()}
         {currentView === View.BREW_GUIDE && renderBrewGuide()}
         {currentView === View.FLAVOR_EXPLORER && renderFlavorExplorer()}
-        {currentView === View.ROASTING && renderRoasting()}
-        {currentView === View.LATTE_ART && renderLatteArt()}
         {currentView === View.TUTOR && renderTutor()}
         {currentView === View.VIDEO_STUDIO && renderVideoStudio()}
         {currentView === View.FAVORITES && renderFavorites()}
         {currentView === View.HISTORY && renderHistory()}
+        {currentView === View.ROASTING && renderRoasting()}
+        {currentView === View.LATTE_ART && renderLatteArt()}
       </main>
     </div>
   );

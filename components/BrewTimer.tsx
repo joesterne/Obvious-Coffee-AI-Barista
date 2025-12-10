@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Recipe, BrewStep } from '../types';
-import { Play, Pause, RefreshCw, CheckCircle, ArrowRight } from 'lucide-react';
+import { Play, Pause, RefreshCw, CheckCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
 
 interface BrewTimerProps {
   recipe: Recipe;
@@ -12,10 +12,74 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Refs for auto-scrolling
   const stepsContainerRef = useRef<HTMLDivElement>(null);
   const activeStepRef = useRef<HTMLDivElement>(null);
+
+  // Audio Context Ref
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const playSound = (type: 'start' | 'step' | 'finish' | 'pause') => {
+    if (isMuted) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+
+    const ctx = audioContextRef.current;
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+
+    if (type === 'start' || type === 'step') {
+      // Pleasant "ding"
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, now); // A5
+      oscillator.frequency.exponentialRampToValueAtTime(440, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      oscillator.start(now);
+      oscillator.stop(now + 0.1);
+    } else if (type === 'pause') {
+      // Lower "boop"
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(440, now);
+      oscillator.frequency.exponentialRampToValueAtTime(220, now + 0.1);
+      gainNode.gain.setValueAtTime(0.1, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      oscillator.start(now);
+      oscillator.stop(now + 0.1);
+    } else if (type === 'finish') {
+      // Major chord success chime
+      const playNote = (freq: number, time: number) => {
+        const osc = ctx.createOscillator();
+        const gn = ctx.createGain();
+        osc.connect(gn);
+        gn.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        gn.gain.setValueAtTime(0.1, time);
+        gn.gain.exponentialRampToValueAtTime(0.001, time + 1.5);
+        osc.start(time);
+        osc.stop(time + 1.5);
+      };
+      
+      playNote(523.25, now);       // C5
+      playNote(659.25, now + 0.2); // E5
+      playNote(783.99, now + 0.4); // G5
+      playNote(1046.50, now + 0.6);// C6
+    }
+  };
 
   useEffect(() => {
     let interval: number | undefined;
@@ -40,19 +104,23 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
         }
     }
     
+    // Check if we just entered a new step
+    if (activeIndex !== -1 && activeIndex !== currentStepIndex) {
+        setCurrentStepIndex(activeIndex);
+        if (isActive) playSound('step');
+    }
+
     // Check if we are past the last step's duration
     const lastStep = recipe.steps[recipe.steps.length - 1];
     const endTime = lastStep.timeStart + lastStep.duration;
     
-    if (seconds > endTime + 5) { // 5 seconds buffer after finish
+    if (seconds > endTime + 5 && !isFinished) { // 5 seconds buffer after finish
         setIsFinished(true);
         setIsActive(false);
+        playSound('finish');
     }
 
-    if (activeIndex !== -1) {
-        setCurrentStepIndex(activeIndex);
-    }
-  }, [seconds, recipe.steps]);
+  }, [seconds, recipe.steps, isActive, currentStepIndex, isFinished]);
 
   // Auto-scroll to active step
   useEffect(() => {
@@ -64,7 +132,15 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
     }
   }, [currentStepIndex]);
 
-  const toggle = () => setIsActive(!isActive);
+  const toggle = () => {
+    if (!isActive) {
+        playSound('start');
+    } else {
+        playSound('pause');
+    }
+    setIsActive(!isActive);
+  };
+  
   const reset = () => {
     setSeconds(0);
     setIsActive(false);
@@ -92,9 +168,18 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-coffee-100 overflow-hidden max-w-2xl mx-auto">
+    <div className="bg-white rounded-2xl shadow-xl border border-coffee-100 overflow-hidden max-w-2xl mx-auto relative">
+      {/* Sound Toggle */}
+      <button 
+        onClick={() => setIsMuted(!isMuted)}
+        className="absolute top-4 left-4 text-coffee-400 hover:text-coffee-600 p-2 rounded-full hover:bg-coffee-50 transition-colors z-10"
+        title={isMuted ? "Unmute" : "Mute"}
+      >
+        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+      </button>
+
       {/* Timer Display Header */}
-      <div className="bg-coffee-50 p-6 md:p-8 text-center border-b border-coffee-100">
+      <div className="bg-coffee-50 p-6 md:p-8 text-center border-b border-coffee-100 relative">
         <h3 className="text-coffee-600 font-bold uppercase tracking-widest text-xs mb-2 flex justify-center items-center gap-2">
           {isFinished ? (
               <span className="text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Brew Complete</span>

@@ -123,5 +123,66 @@ export const LATTE_ART_PATTERNS: LatteArtPattern[] = [
       "Lift and pull through the center quickly to create the stem."
     ],
     videoPrompt: "Slow motion top down view of pouring a Rosetta latte art pattern. Rhythmic wiggling of the pitcher, white ripples forming in the cup. Elegant and smooth motion."
+  },
+  {
+    type: 'latte_art',
+    id: 'swan',
+    name: "The Swan",
+    difficulty: 'Advanced',
+    description: "An elegant combination of a Rosetta base and a precise neck draw, creating a bird silhouette.",
+    image: "https://picsum.photos/400/300?random=14",
+    steps: [
+      "Pour a Rosetta base, but place it slightly off-center.",
+      "At the top of the Rosetta, lift the pitcher to stop the leaves.",
+      "Pour a thin stream up the side of the Rosetta to create the neck (drag method).",
+      "At the top of the neck, drop the spout close again to pour a small heart for the head.",
+      "Lift and cut through the head to finish."
+    ],
+    videoPrompt: "Cinematic close up of pouring a Swan latte art pattern. Base rosetta forming, then the pitcher lifts to draw a thin neck line up the side, finishing with a small heart head. Elegant and artistic."
+  },
+  {
+    type: 'latte_art',
+    id: 'winged_tulip',
+    name: "The Winged Tulip",
+    difficulty: 'Advanced',
+    description: "Combines the flow of a Rosetta with the structure of a Tulip. A wide base wraps around the central stack.",
+    image: "https://picsum.photos/400/300?random=15",
+    steps: [
+      "Start with a Rosetta motion to create a wide, wrapping base.",
+      "Stop pouring, then move spout to the center of the base.",
+      "Pour a standard Tulip stack (2-3 layers) inside the wings.",
+      "Lift and cut through all layers to connect the design."
+    ],
+    videoPrompt: "Macro top-down view of a Winged Tulip pour. Wide, flowing white wings wrapping around a central stack of distinct hearts. High contrast espresso canvas."
+  },
+  {
+    type: 'latte_art',
+    id: 'seahorse',
+    name: "The Seahorse",
+    difficulty: 'Advanced',
+    description: "A whimsical creature created by distorting a Rosetta neck. Features a curved body and detailed snout.",
+    image: "https://picsum.photos/400/300?random=16",
+    steps: [
+        "Pour a curved Rosetta base, favoring one side of the cup.",
+        "Drag the stream up the concave side to form the back.",
+        "Stop at the top, then pour a small heart for the head.",
+        "Drag the stream forward to create the snout."
+    ],
+    videoPrompt: "Top down view of pouring a Seahorse latte art pattern. Curved rosetta body, distinct head pour, and snout detail. High contrast and playful."
+  },
+  {
+    type: 'latte_art',
+    id: 'phoenix',
+    name: "The Phoenix",
+    difficulty: 'Advanced',
+    description: "A majestic double-wing design surrounding a central body. Requires perfect symmetry and flow control.",
+    image: "https://picsum.photos/400/300?random=17",
+    steps: [
+        "Pour a wide, wrapping Rosetta base for the outer wings.",
+        "Pour a second, smaller inner Rosetta for inner feathers.",
+        "Stack a central Tulip for the bird's body.",
+        "Finish with a heart for the head and a sharp cut-through."
+    ],
+    videoPrompt: "Cinematic close-up of pouring a Phoenix latte art design. Wide wrapping wings, central body stack, and precise symmetry. Professional barista competition style."
   }
 ];
