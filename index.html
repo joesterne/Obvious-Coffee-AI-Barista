@@ -54,6 +54,28 @@
       .font-brand {
         font-family: 'Oswald', sans-serif;
       }
+
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background-color: white;
+          color: black;
+        }
+        /* Ensure content flows well */
+        .max-w-4xl, .max-w-6xl {
+          max-width: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+        /* Hide scrollbars in print */
+        ::-webkit-scrollbar {
+          display: none;
+        }
+      }
     </style>
   <script type="importmap">
 {

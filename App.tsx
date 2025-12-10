@@ -15,7 +15,7 @@ import BeanSelector from './components/BeanSelector';
 import RoastingDiagram from './components/RoastingDiagram'; // Keep RoastingDiagram if it's used in RoastingView inline, or extract RoastingView
 
 // Lucide Icons
-import { Sparkles, BookOpen, Loader2, Heart, Trash2, ArrowRight, Droplets, Palette, Calendar, ChevronLeft, Film, Play, Factory, Check, Flame, Globe } from 'lucide-react';
+import { Sparkles, BookOpen, Loader2, Heart, Trash2, ArrowRight, Droplets, Palette, Calendar, ChevronLeft, Film, Play, Factory, Check, Flame, Globe, Printer } from 'lucide-react';
 
 // --- Inline Views (For brevity in XML response, ideally these are also separate files) ---
 
@@ -31,11 +31,22 @@ const HistoryView: React.FC<{
            <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Brew History</h2>
            <p className="text-coffee-600">Your recent generations.</p>
         </div>
-        {historyItems.length > 0 && (
-           <button onClick={handleClearHistory} className="flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium">
-              <Trash2 size={16} /> Clear History
-           </button>
-        )}
+        <div className="flex items-center gap-2 no-print">
+            {historyItems.length > 0 && (
+                <button 
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 text-coffee-600 hover:text-coffee-900 px-3 py-2 rounded-lg hover:bg-coffee-100 transition-colors"
+                    title="Print History"
+                >
+                    <Printer size={18} /> <span className="hidden sm:inline">Print</span>
+                </button>
+            )}
+            {historyItems.length > 0 && (
+            <button onClick={handleClearHistory} className="flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors">
+                <Trash2 size={16} /> Clear History
+            </button>
+            )}
+        </div>
       </div>
       {historyItems.length === 0 ? (
           <div className="text-center py-20 bg-coffee-50/50 rounded-2xl border border-dashed border-coffee-200">
@@ -49,7 +60,7 @@ const HistoryView: React.FC<{
       ) : (
           <div className="space-y-4">
               {historyItems.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex items-center justify-between hover:border-coffee-300 transition-all group">
+                  <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-coffee-100 flex items-center justify-between hover:border-coffee-300 transition-all group break-inside-avoid">
                       <div className="flex items-center gap-4 overflow-hidden">
                           <div className="bg-coffee-50 p-3 rounded-lg text-coffee-600 flex-shrink-0"><Droplets size={20} /></div>
                           <div className="min-w-0">
@@ -61,7 +72,7 @@ const HistoryView: React.FC<{
                               </div>
                           </div>
                       </div>
-                      <button onClick={() => handleLoadHistoryItem(item)} className="p-2 text-coffee-500 hover:text-coffee-800 hover:bg-coffee-50 rounded-full transition-colors">
+                      <button onClick={() => handleLoadHistoryItem(item)} className="p-2 text-coffee-500 hover:text-coffee-800 hover:bg-coffee-50 rounded-full transition-colors no-print">
                          <ArrowRight size={20} />
                       </button>
                   </div>
@@ -77,9 +88,19 @@ const FavoritesView: React.FC<{
   handleLoadFavorite: (item: FavoriteItem) => void;
 }> = ({ savedItems, handleDeleteItem, handleLoadFavorite }) => (
     <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="mb-8">
-            <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Your Favorite Brews & Guides</h2>
-            <p className="text-coffee-600">Revisit your best cups and tutorials.</p>
+        <div className="mb-8 flex justify-between items-end">
+            <div>
+                <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Your Favorite Brews & Guides</h2>
+                <p className="text-coffee-600">Revisit your best cups and tutorials.</p>
+            </div>
+            {savedItems.length > 0 && (
+                <button 
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 text-coffee-600 hover:text-coffee-900 px-3 py-2 rounded-lg hover:bg-coffee-100 transition-colors no-print"
+                >
+                    <Printer size={18} /> Print Favorites
+                </button>
+            )}
         </div>
         {savedItems.length === 0 ? (
             <div className="text-center py-20 bg-coffee-50/50 rounded-2xl border border-dashed border-coffee-200">
@@ -92,7 +113,7 @@ const FavoritesView: React.FC<{
                 {savedItems.map((saved) => {
                     const isRecipe = saved.type === 'recipe';
                     return (
-                      <div key={saved.id} className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100 hover:shadow-md transition-all group relative">
+                      <div key={saved.id} className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100 hover:shadow-md transition-all group relative break-inside-avoid">
                           <div className="flex justify-between items-start mb-4">
                               <div className="flex items-center gap-2">
                                   {isRecipe ? <Droplets size={16} className="text-coffee-400"/> : <Palette size={16} className="text-coffee-400"/>}
@@ -104,12 +125,12 @@ const FavoritesView: React.FC<{
                                       </div>
                                   </div>
                               </div>
-                              <button onClick={(e) => handleDeleteItem(saved.id!, e)} className="p-2 text-coffee-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                              <button onClick={(e) => handleDeleteItem(saved.id!, e)} className="p-2 text-coffee-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors no-print">
                                   <Trash2 size={18} />
                               </button>
                           </div>
                           <p className="text-coffee-600 text-sm line-clamp-2 mb-4 h-10">{saved.description}</p>
-                          <button onClick={() => handleLoadFavorite(saved)} className="w-full bg-coffee-50 text-coffee-800 py-2 rounded-lg font-medium hover:bg-coffee-100 flex items-center justify-center gap-2 group-hover:bg-coffee-600 group-hover:text-white transition-colors">
+                          <button onClick={() => handleLoadFavorite(saved)} className="w-full bg-coffee-50 text-coffee-800 py-2 rounded-lg font-medium hover:bg-coffee-100 flex items-center justify-center gap-2 group-hover:bg-coffee-600 group-hover:text-white transition-colors no-print">
                               {isRecipe ? "Brew This Recipe" : "View Tutorial"} <ArrowRight size={16} />
                           </button>
                       </div>
@@ -142,11 +163,13 @@ const FlavorExplorerView: React.FC<{ profile: CoffeeProfile; setProfile: React.D
                 <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Flavor Explorer</h2>
                 <p className="text-coffee-600">Understand the chemistry of taste.</p>
             </div>
-            <BeanSelector profile={profile} setProfile={setProfile} />
-            <div className="flex justify-center mb-8">
-                <button onClick={handleExplainFlavor} disabled={isExplaining} className="bg-coffee-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-coffee-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                {isExplaining ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />} Analyze Profile
-                </button>
+            <div className="no-print">
+                <BeanSelector profile={profile} setProfile={setProfile} />
+                <div className="flex justify-center mb-8">
+                    <button onClick={handleExplainFlavor} disabled={isExplaining} className="bg-coffee-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-coffee-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    {isExplaining ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />} Analyze Profile
+                    </button>
+                </div>
             </div>
             {flavorExplanation && (
                 <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 animate-fade-in">
@@ -163,11 +186,18 @@ const FlavorExplorerView: React.FC<{ profile: CoffeeProfile; setProfile: React.D
 // ... Ideally RoastingView and LatteArtView are also external components, but due to length constraints they are simplified here or inline
 const RoastingView = () => (
     <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="mb-10 text-center">
+      <div className="mb-10 text-center relative">
+        <button 
+            onClick={() => window.print()}
+            className="absolute right-0 top-0 text-coffee-400 hover:text-coffee-800 p-2 rounded-full hover:bg-coffee-50 transition-colors no-print"
+            title="Print Guide"
+        >
+            <Printer size={20} />
+        </button>
         <h2 className="text-3xl font-brand font-bold text-coffee-950 mb-2 uppercase tracking-wide">The Roast Masterclass</h2>
         <p className="text-coffee-600">Understand the journey from green seed to roasted bean.</p>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 mb-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 mb-8 break-inside-avoid">
         <h3 className="text-xl font-bold text-coffee-800 mb-6 flex items-center gap-2"><Flame size={20} className="text-coffee-500" /> The Roasting Curve</h3>
         <p className="text-coffee-600 mb-6 leading-relaxed">Roasting is not just cooking; it is the calculated application of heat.</p>
         <div className="w-full mb-6 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="stages" /></div>
@@ -178,7 +208,7 @@ const RoastingView = () => (
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-8 mb-8">
-         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col">
+         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col break-inside-avoid">
             <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-coffee-100 rounded-lg text-coffee-800"><Factory size={20} /></div><h3 className="font-bold text-lg text-coffee-800">Drum Roasting</h3></div>
             <div className="h-40 w-full mb-4 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="drum" /></div>
             <div className="flex-1">
@@ -186,7 +216,7 @@ const RoastingView = () => (
                <ul className="space-y-2 text-sm text-coffee-500"><li className="flex items-start gap-2"><Check size={14} className="mt-1 text-coffee-400" /> Rich body</li></ul>
             </div>
          </div>
-         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col">
+         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col break-inside-avoid">
             <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-blue-100 rounded-lg text-blue-800"><Flame size={20} /></div><h3 className="font-bold text-lg text-coffee-800">Fluid Bed</h3></div>
             <div className="h-40 w-full mb-4 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="fluid_bed" /></div>
             <div className="flex-1">
@@ -195,7 +225,7 @@ const RoastingView = () => (
             </div>
          </div>
       </div>
-      <div className="bg-gradient-to-br from-coffee-800 to-coffee-900 rounded-2xl p-8 text-white">
+      <div className="bg-gradient-to-br from-coffee-800 to-coffee-900 rounded-2xl p-8 text-white break-inside-avoid">
          <div className="flex items-center gap-3 mb-6"><Globe size={24} className="text-coffee-200" /><h3 className="text-2xl font-brand font-bold uppercase">Nature vs. Nurture</h3></div>
          <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
@@ -242,7 +272,7 @@ const LatteArtView: React.FC<{
     if (activePattern) {
         return (
            <div className="max-w-4xl mx-auto px-6 py-8 animate-fade-in">
-              <button onClick={() => { setSelectedLatteArtId(null); setLatteArtVideoUrl(null); }} className="flex items-center gap-2 text-coffee-500 hover:text-coffee-800 mb-4 transition-colors">
+              <button onClick={() => { setSelectedLatteArtId(null); setLatteArtVideoUrl(null); }} className="flex items-center gap-2 text-coffee-500 hover:text-coffee-800 mb-4 transition-colors no-print">
                  <ChevronLeft size={16} /> Back to patterns
               </button>
               <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 overflow-hidden">
@@ -254,7 +284,7 @@ const LatteArtView: React.FC<{
                         </div>
                         <p className="text-coffee-200 text-lg leading-relaxed">{activePattern.description}</p>
                      </div>
-                     <button onClick={() => handleSaveItem(activePattern)} className={`p-3 rounded-full transition-colors ${isSaved ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                     <button onClick={() => handleSaveItem(activePattern)} className={`p-3 rounded-full transition-colors no-print ${isSaved ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`}>
                         <Heart size={20} className={isSaved ? "fill-current" : ""} />
                      </button>
                  </div>
@@ -270,7 +300,7 @@ const LatteArtView: React.FC<{
                           ))}
                        </div>
                     </div>
-                    <div className="p-6 md:p-8 flex flex-col">
+                    <div className="p-6 md:p-8 flex flex-col no-print">
                        <h4 className="font-bold text-coffee-800 uppercase tracking-widest text-xs mb-6 flex items-center gap-2"><Film size={16} /> Visual Demonstration</h4>
                        <div className="flex-1 bg-black rounded-xl overflow-hidden relative min-h-[250px] shadow-inner group">
                           {latteArtVideoUrl ? (
@@ -302,20 +332,20 @@ const LatteArtView: React.FC<{
                 <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Latte Art Studio</h2>
                 <p className="text-coffee-600">Master the pour.</p>
             </div>
-            <div className="flex flex-wrap gap-2 mb-8 animate-fade-in">
+            <div className="flex flex-wrap gap-2 mb-8 animate-fade-in no-print">
                 {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((filter) => (
                     <button key={filter} onClick={() => setLatteArtFilter(filter)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${latteArtFilter === filter ? 'bg-coffee-800 text-white shadow-md' : 'bg-white text-coffee-500 border border-coffee-200 hover:border-coffee-400 hover:text-coffee-700'}`}>{filter}</button>
                 ))}
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
                 {filteredPatterns.map(pattern => (
-                  <button key={pattern.id} onClick={() => setSelectedLatteArtId(pattern.id)} className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100 hover:shadow-xl hover:border-coffee-300 transition-all text-left group">
+                  <button key={pattern.id} onClick={() => setSelectedLatteArtId(pattern.id)} className="bg-white p-6 rounded-2xl shadow-sm border border-coffee-100 hover:shadow-xl hover:border-coffee-300 transition-all text-left group break-inside-avoid">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-xl font-brand font-bold text-coffee-900 group-hover:text-coffee-600 transition-colors uppercase">{pattern.name}</h3>
                         <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${pattern.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' : pattern.difficulty === 'Intermediate' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{pattern.difficulty}</span>
                       </div>
                       <p className="text-coffee-600 text-sm mb-6 line-clamp-2">{pattern.description}</p>
-                      <div className="flex items-center text-coffee-500 text-xs font-bold uppercase tracking-widest gap-2">Learn More <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></div>
+                      <div className="flex items-center text-coffee-500 text-xs font-bold uppercase tracking-widest gap-2 no-print">Learn More <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></div>
                   </button>
                 ))}
             </div>
@@ -407,7 +437,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen pb-20 bg-coffee-50">
-      <Header currentView={currentView} setCurrentView={setCurrentView} />
+      <div className="no-print">
+         <Header currentView={currentView} setCurrentView={setCurrentView} />
+      </div>
       <main>
         {currentView === View.HOME && <HomeView setCurrentView={setCurrentView} />}
         

@@ -5,7 +5,7 @@ import * as GeminiService from '../../services/geminiService';
 import BrewTimer from '../BrewTimer';
 import BrewMethodDiagram from '../BrewMethodDiagram';
 import BeanSelector from '../BeanSelector';
-import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Film, Loader2, Play, Sliders } from 'lucide-react';
+import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Film, Loader2, Play, Sliders, Printer } from 'lucide-react';
 import { ensureApiKey } from '../../utils/auth';
 
 interface BrewGuideViewProps {
@@ -188,7 +188,9 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
         <p className="text-coffee-600">Tailored recipes for your beans.</p>
       </div>
       
-      <BeanSelector profile={profile} setProfile={setProfile} />
+      <div className="no-print">
+         <BeanSelector profile={profile} setProfile={setProfile} />
+      </div>
       
       {!recipe && !isLoadingRecipe && renderTemperatureInfo()}
       
@@ -229,9 +231,16 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
 
       {recipe && !isLoadingRecipe && (
         <div className="animate-fade-in-up">
-           <div className="flex justify-between items-center mb-4">
+           <div className="flex justify-between items-center mb-4 no-print">
                <button onClick={() => { setRecipe(null); setOriginalRecipe(null); setRecipeVideoUrl(null); }} className="text-sm text-coffee-500 hover:text-coffee-800 underline">Choose a different method</button>
                <div className="flex gap-2">
+                  <button 
+                      onClick={() => window.print()} 
+                      className="flex items-center gap-2 text-sm bg-white border border-coffee-200 text-coffee-600 hover:bg-coffee-50 px-3 py-1.5 rounded-full transition-colors font-medium"
+                      title="Print Recipe"
+                  >
+                      <Printer size={14} /> Print
+                  </button>
                   <button 
                       onClick={() => handleSaveItem({ ...recipe, type: 'recipe' })}
                       className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition-colors font-medium border ${
@@ -297,12 +306,12 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
                           <h3 className="font-brand font-bold text-lg text-coffee-950 uppercase">Understanding the {recipe.ratio} Ratio</h3>
                           <button 
                               onClick={() => setShowRatioInfo(!showRatioInfo)}
-                              className="text-coffee-400 hover:text-coffee-600 transition-colors bg-coffee-50 p-1 rounded-full hover:bg-coffee-100"
+                              className="text-coffee-400 hover:text-coffee-600 transition-colors bg-coffee-50 p-1 rounded-full hover:bg-coffee-100 no-print"
                           >
                               <Info size={16} />
                           </button>
                           {showRatioInfo && (
-                              <div className="absolute bottom-full left-0 mb-2 z-20 w-80 sm:w-96 bg-white p-5 rounded-xl shadow-xl border border-coffee-200 text-left animate-fade-in origin-bottom-left">
+                              <div className="absolute bottom-full left-0 mb-2 z-20 w-80 sm:w-96 bg-white p-5 rounded-xl shadow-xl border border-coffee-200 text-left animate-fade-in origin-bottom-left no-print">
                                   <div className="flex justify-between items-start mb-3">
                                       <h4 className="font-bold text-coffee-800 text-sm flex items-center gap-2">
                                           <FlaskConical size={14} className="text-coffee-500"/>
@@ -332,7 +341,7 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
                   </div>
               </div>
 
-              <div className="p-6 md:p-8">
+              <div className="p-6 md:p-8 no-print">
                 <div className="flex items-center gap-2 mb-4">
                    <Sliders size={18} className="text-coffee-600" />
                    <h3 className="text-sm font-bold text-coffee-600 uppercase tracking-widest">Adjust Total Brew Time</h3>
@@ -354,7 +363,7 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
               </div>
            </div>
 
-           <div className="grid md:grid-cols-2 gap-6 mb-8">
+           <div className="grid md:grid-cols-2 gap-6 mb-8 no-print">
               <div className="p-6 bg-coffee-50 rounded-2xl border border-coffee-100 flex flex-col items-center justify-center text-center">
                   <h3 className="text-coffee-600 font-bold uppercase tracking-widest text-xs mb-6">Equipment Setup</h3>
                   <div className="w-48 h-48 mb-4">
