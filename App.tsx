@@ -284,9 +284,18 @@ const LatteArtView: React.FC<{
                         </div>
                         <p className="text-coffee-200 text-lg leading-relaxed">{activePattern.description}</p>
                      </div>
-                     <button onClick={() => handleSaveItem(activePattern)} className={`p-3 rounded-full transition-colors no-print ${isSaved ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`}>
-                        <Heart size={20} className={isSaved ? "fill-current" : ""} />
-                     </button>
+                     <div className="flex items-center gap-2">
+                         <button 
+                            onClick={() => window.print()}
+                            className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors no-print"
+                            title="Print Guide"
+                         >
+                            <Printer size={20} />
+                         </button>
+                         <button onClick={() => handleSaveItem(activePattern)} className={`p-3 rounded-full transition-colors no-print ${isSaved ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                            <Heart size={20} className={isSaved ? "fill-current" : ""} />
+                         </button>
+                     </div>
                  </div>
                  <div className="grid md:grid-cols-2">
                     <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-coffee-100 bg-coffee-50/30">
@@ -328,9 +337,17 @@ const LatteArtView: React.FC<{
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-8">
-            <div className="mb-8">
-                <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Latte Art Studio</h2>
-                <p className="text-coffee-600">Master the pour.</p>
+            <div className="mb-8 flex justify-between items-end">
+                <div>
+                    <h2 className="text-3xl font-brand font-bold text-coffee-950 uppercase tracking-wide">Latte Art Studio</h2>
+                    <p className="text-coffee-600">Master the pour.</p>
+                </div>
+                <button 
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 text-coffee-600 hover:text-coffee-900 px-3 py-2 rounded-lg hover:bg-coffee-100 transition-colors no-print"
+                >
+                    <Printer size={18} /> Print Patterns
+                </button>
             </div>
             <div className="flex flex-wrap gap-2 mb-8 animate-fade-in no-print">
                 {(['All', 'Beginner', 'Intermediate', 'Advanced'] as const).map((filter) => (
