@@ -5,7 +5,7 @@ import * as GeminiService from '../../services/geminiService';
 import BrewTimer from '../BrewTimer';
 import BrewMethodDiagram from '../BrewMethodDiagram';
 import BeanSelector from '../BeanSelector';
-import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Film, Loader2, Play, Sliders, Printer } from 'lucide-react';
+import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Film, Loader2, Play, Sliders, Printer, Sparkles, MessageSquare } from 'lucide-react';
 import { ensureApiKey } from '../../utils/auth';
 
 interface BrewGuideViewProps {
@@ -31,16 +31,26 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
   const [isGeneratingRecipeVideo, setIsGeneratingRecipeVideo] = useState(false);
   const [showRatioInfo, setShowRatioInfo] = useState(false);
 
-  const handleGenerateRecipe = async (methodId: string) => {
-    setSelectedMethodId(methodId);
+  // Load the stock recipe immediately
+  const handleSelectMethod = (methodId: string) => {
     const method = BREW_METHODS.find(m => m.id === methodId);
     if (!method) return;
 
-    setIsLoadingRecipe(true);
-    setRecipe(null);
-    setOriginalRecipe(null);
+    setSelectedMethodId(methodId);
     setRecipeVideoUrl(null);
     setShowRatioInfo(false);
+    
+    // Load default recipe
+    setRecipe(method.defaultRecipe);
+    setOriginalRecipe(method.defaultRecipe);
+  };
+
+  const handleCustomizeWithAI = async () => {
+    if (!selectedMethodId) return;
+    const method = BREW_METHODS.find(m => m.id === selectedMethodId);
+    if (!method) return;
+
+    setIsLoadingRecipe(true);
     try {
       const result = await GeminiService.generateRecipe(method.name, profile, profile.tastingNotes);
       setRecipe(result);
@@ -61,7 +71,9 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
     setIsGeneratingRecipeVideo(true);
     try {
         const method = BREW_METHODS.find(m => m.id === selectedMethodId);
-        const response = await fetch(method?.image || 'https://picsum.photos/400/300');
+        // Fallback to a safe coffee image from Unsplash if method image is missing
+        const safeFallback = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80';
+        const response = await fetch(method?.image || safeFallback);
         const imageBlob = await response.blob();
         
         const stepsPreview = recipe.steps.slice(0, 3).map(s => s.action).join(', ');
@@ -108,8 +120,6 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
   };
 
   const navigateToVideoStudioWithRecipe = () => {
-    // This action would ideally pre-populate state in App or VideoStudio via context/params
-    // For now, we just switch views
     setCurrentView(View.VIDEO_STUDIO);
   };
 
@@ -166,18 +176,6 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
     </div>
   );
 
-  const renderOriginInfo = () => (
-    <div className="bg-white rounded-2xl p-6 border border-coffee-100 mb-8 shadow-sm">
-      <div className="flex items-start gap-4 mb-6">
-        {/* Origin info contents truncated for brevity, identical to App.tsx */}
-        <p className="text-sm text-coffee-600">
-          <strong className="text-coffee-800">Global Terroir:</strong> Geography and climate shape the flavor potential in your cup before roasting even begins.
-        </p>
-      </div>
-       {/* Simplified for brevity in refactor, functionally same as App.tsx */}
-    </div>
-  );
-
   const totalDuration = recipe ? recipe.steps.reduce((acc, step) => acc + step.duration, 0) : 0;
   const isRecipeSaved = recipe && recipe.id && savedItems.some(r => r.id === recipe.id);
 
@@ -199,7 +197,7 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
           {BREW_METHODS.map(method => (
             <button
               key={method.id}
-              onClick={() => handleGenerateRecipe(method.id)}
+              onClick={() => handleSelectMethod(method.id)}
               className="group relative overflow-hidden rounded-xl aspect-square md:aspect-[4/3] bg-coffee-100 hover:shadow-lg transition-all"
             >
               <img src={method.image} alt={method.name} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
@@ -253,18 +251,36 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
                       {isRecipeSaved ? 'Saved' : 'Save'}
                   </button>
                   <button 
-                      onClick={navigateToVideoStudioWithRecipe}
+                      onClick={() => setCurrentView(View.TUTOR)}
                       className="flex items-center gap-2 text-sm bg-coffee-100 hover:bg-coffee-200 text-coffee-800 px-3 py-1.5 rounded-full transition-colors font-medium"
                   >
-                      <Film size={14} /> Open Video Studio
+                      <MessageSquare size={14} /> Help
                   </button>
                </div>
            </div>
            
            <div className="bg-white rounded-2xl shadow-sm border border-coffee-200 overflow-hidden mb-8">
-              <div className="bg-coffee-800 text-white p-6 md:p-8">
-                  <h2 className="text-3xl font-brand font-bold mb-2 uppercase">{recipe.method} for {profile.origin}</h2>
-                  <p className="text-coffee-200 text-lg leading-relaxed max-w-3xl">{recipe.description}</p>
+              <div className="bg-coffee-800 text-white p-6 md:p-8 relative">
+                  <div className="relative z-10">
+                    <h2 className="text-3xl font-brand font-bold mb-2 uppercase">{recipe.method}</h2>
+                    <p className="text-coffee-200 text-lg leading-relaxed max-w-3xl">{recipe.description}</p>
+                    
+                    {/* AI Customization Call to Action */}
+                    {!recipe.id && ( // Assuming stock recipes don't have an ID initially or we check a flag. Stock recipes in constant didn't have ID, generated ones usually get one or we can check simple property
+                        <div className="mt-6 p-4 bg-white/10 rounded-xl border border-white/20 backdrop-blur-sm flex flex-col sm:flex-row items-center gap-4">
+                            <div className="flex-1">
+                                <h4 className="font-bold text-white flex items-center gap-2"><Sparkles size={16} /> Customize for {profile.origin} {profile.roastLevel}</h4>
+                                <p className="text-white/70 text-sm">The current recipe is a standard guide. Use AI to dial it in for your specific bean profile.</p>
+                            </div>
+                            <button 
+                                onClick={handleCustomizeWithAI}
+                                className="bg-white text-coffee-900 px-5 py-2 rounded-lg font-bold text-sm hover:bg-coffee-50 transition-colors shadow-lg whitespace-nowrap flex items-center gap-2"
+                            >
+                                <Sparkles size={16} /> AI Remix
+                            </button>
+                        </div>
+                    )}
+                  </div>
               </div>
 
               <div className="border-b border-coffee-100 bg-coffee-50/30 px-6 py-2">

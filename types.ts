@@ -67,4 +67,5 @@ export interface MethodDetails {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   body: 'Light' | 'Medium' | 'Heavy';
   description: string;
+  defaultRecipe: Recipe;
 }

@@ -40,10 +40,12 @@ const RoastingDiagram: React.FC<RoastingDiagramProps> = ({ type }) => {
           <g className="animate-spin" style={{ transformOrigin: '100px 60px', animationDuration: '4s' }}>
             <circle cx="90" cy="70" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1s', animationDelay: '0s' }} />
             <circle cx="110" cy="70" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.2s', animationDelay: '0.1s' }} />
-            <circle cx="100" cy="85" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.9s', animationDelay: '0.2s' }} />
-            <circle cx="90" cy="50" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.1s', animationDelay: '0.3s' }} />
+            <circle cx="100" cy="85" r="3" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.9s', animationDelay: '0.2s' }} />
+            <circle cx="90" cy="50" r="2" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.1s', animationDelay: '0.3s' }} />
             <circle cx="115" cy="55" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.3s', animationDelay: '0.15s' }} />
-            <circle cx="85" cy="60" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.8s', animationDelay: '0.05s' }} />
+            <circle cx="85" cy="60" r="2.8" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.8s', animationDelay: '0.05s' }} />
+            <circle cx="105" cy="65" r="2.2" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.95s', animationDelay: '0.25s' }} />
+            <circle cx="95" cy="55" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.15s', animationDelay: '0.4s' }} />
           </g>
         </svg>
       );
