@@ -13,15 +13,21 @@ const RoastingDiagram: React.FC<RoastingDiagramProps> = ({ type }) => {
         <svg viewBox="0 0 200 120" className={commonClasses} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           {/* Main Drum */}
           <circle cx="100" cy="60" r="40" className="text-coffee-600" />
-          <path d="M100,20 L100,100" strokeDasharray="4 4" opacity="0.5" />
-          <path d="M60,60 L140,60" strokeDasharray="4 4" opacity="0.5" />
           
-          {/* Rotation Arrows */}
-          <path d="M130,40 Q150,60 130,80" markerEnd="url(#arrow)" />
+          {/* Rotating Drum Structure */}
+          <g className="animate-spin" style={{ transformOrigin: '100px 60px', animationDuration: '8s' }}>
+             <path d="M100,20 L100,100" strokeDasharray="4 4" opacity="0.3" />
+             <path d="M60,60 L140,60" strokeDasharray="4 4" opacity="0.3" />
+          </g>
           
-          {/* Flame below */}
-          <path d="M80,110 Q90,90 100,110 T120,110" className="text-red-500" strokeWidth="3" />
-          <path d="M90,110 Q100,95 110,110" className="text-amber-500" strokeWidth="3" />
+          {/* Rotation Indicator */}
+          <path d="M135,35 Q155,60 135,85" opacity="0.6" />
+          <path d="M135,85 L140,78" opacity="0.6" /> {/* Arrow head part 1 */}
+          <path d="M135,85 L128,80" opacity="0.6" /> {/* Arrow head part 2 */}
+          
+          {/* Flame below - Animated */}
+          <path d="M80,110 Q90,90 100,110 T120,110" className="text-red-500 animate-pulse" strokeWidth="3" />
+          <path d="M90,110 Q100,95 110,110" className="text-amber-500 animate-pulse" strokeWidth="3" style={{ animationDelay: '0.5s' }} />
           
           {/* Hopper/Chute */}
           <path d="M30,20 L65,40" />
@@ -30,11 +36,15 @@ const RoastingDiagram: React.FC<RoastingDiagramProps> = ({ type }) => {
           {/* Cooling Tray */}
           <ellipse cx="160" cy="100" rx="30" ry="10" className="text-coffee-400" />
           
-          {/* Beans inside */}
-          <circle cx="90" cy="70" r="2" fill="currentColor" />
-          <circle cx="110" cy="70" r="2" fill="currentColor" />
-          <circle cx="100" cy="80" r="2" fill="currentColor" />
-          <circle cx="90" cy="50" r="2" fill="currentColor" />
+          {/* Beans inside - Tumbling + Bouncing Animation */}
+          <g className="animate-spin" style={{ transformOrigin: '100px 60px', animationDuration: '4s' }}>
+            <circle cx="90" cy="70" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1s', animationDelay: '0s' }} />
+            <circle cx="110" cy="70" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.2s', animationDelay: '0.1s' }} />
+            <circle cx="100" cy="85" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.9s', animationDelay: '0.2s' }} />
+            <circle cx="90" cy="50" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.1s', animationDelay: '0.3s' }} />
+            <circle cx="115" cy="55" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '1.3s', animationDelay: '0.15s' }} />
+            <circle cx="85" cy="60" r="2.5" fill="currentColor" className="animate-bounce" style={{ animationDuration: '0.8s', animationDelay: '0.05s' }} />
+          </g>
         </svg>
       );
     case 'fluid_bed':

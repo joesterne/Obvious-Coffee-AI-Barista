@@ -11,11 +11,12 @@ import HomeView from './components/views/HomeView';
 import BrewGuideView from './components/views/BrewGuideView';
 import TutorView from './components/views/TutorView';
 import VideoStudioView from './components/views/VideoStudioView';
+import RoastingView from './components/views/RoastingView';
 import BeanSelector from './components/BeanSelector';
 import RoastingDiagram from './components/RoastingDiagram'; // Keep RoastingDiagram if it's used in RoastingView inline, or extract RoastingView
 
 // Lucide Icons
-import { Sparkles, BookOpen, Loader2, Heart, Trash2, ArrowRight, Droplets, Palette, Calendar, ChevronLeft, Film, Play, Factory, Check, Flame, Globe, Printer } from 'lucide-react';
+import { Sparkles, BookOpen, Loader2, Heart, Trash2, ArrowRight, Droplets, Palette, Calendar, ChevronLeft, Film, Play } from 'lucide-react';
 
 // --- Inline Views (For brevity in XML response, ideally these are also separate files) ---
 
@@ -183,64 +184,6 @@ const FlavorExplorerView: React.FC<{ profile: CoffeeProfile; setProfile: React.D
     );
 };
 
-// ... Ideally RoastingView and LatteArtView are also external components, but due to length constraints they are simplified here or inline
-const RoastingView = () => (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="mb-10 text-center relative">
-        <button 
-            onClick={() => window.print()}
-            className="absolute right-0 top-0 text-coffee-400 hover:text-coffee-800 p-2 rounded-full hover:bg-coffee-50 transition-colors no-print"
-            title="Print Guide"
-        >
-            <Printer size={20} />
-        </button>
-        <h2 className="text-3xl font-brand font-bold text-coffee-950 mb-2 uppercase tracking-wide">The Roast Masterclass</h2>
-        <p className="text-coffee-600">Understand the journey from green seed to roasted bean.</p>
-      </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 mb-8 break-inside-avoid">
-        <h3 className="text-xl font-bold text-coffee-800 mb-6 flex items-center gap-2"><Flame size={20} className="text-coffee-500" /> The Roasting Curve</h3>
-        <p className="text-coffee-600 mb-6 leading-relaxed">Roasting is not just cooking; it is the calculated application of heat.</p>
-        <div className="w-full mb-6 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="stages" /></div>
-        <div className="grid md:grid-cols-3 gap-6 text-sm">
-           <div><h4 className="font-bold text-coffee-800 mb-1">1. Drying Phase</h4><p className="text-coffee-500">Green to yellow. Moisture evaporates.</p></div>
-           <div><h4 className="font-bold text-coffee-800 mb-1">2. Maillard Reaction</h4><p className="text-coffee-500">Sugars react. Browns develop.</p></div>
-           <div><h4 className="font-bold text-coffee-800 mb-1">3. Development</h4><p className="text-coffee-500">Post crack. Flavor balance.</p></div>
-        </div>
-      </div>
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
-         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col break-inside-avoid">
-            <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-coffee-100 rounded-lg text-coffee-800"><Factory size={20} /></div><h3 className="font-bold text-lg text-coffee-800">Drum Roasting</h3></div>
-            <div className="h-40 w-full mb-4 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="drum" /></div>
-            <div className="flex-1">
-               <p className="text-coffee-600 text-sm mb-4"><strong>Mechanism:</strong> Conduction & Convection.</p>
-               <ul className="space-y-2 text-sm text-coffee-500"><li className="flex items-start gap-2"><Check size={14} className="mt-1 text-coffee-400" /> Rich body</li></ul>
-            </div>
-         </div>
-         <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-6 flex flex-col break-inside-avoid">
-            <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-blue-100 rounded-lg text-blue-800"><Flame size={20} /></div><h3 className="font-bold text-lg text-coffee-800">Fluid Bed</h3></div>
-            <div className="h-40 w-full mb-4 bg-coffee-50 rounded-xl p-4"><RoastingDiagram type="fluid_bed" /></div>
-            <div className="flex-1">
-               <p className="text-coffee-600 text-sm mb-4"><strong>Mechanism:</strong> Pure Convection.</p>
-               <ul className="space-y-2 text-sm text-coffee-500"><li className="flex items-start gap-2"><Check size={14} className="mt-1 text-coffee-400" /> Bright acidity</li></ul>
-            </div>
-         </div>
-      </div>
-      <div className="bg-gradient-to-br from-coffee-800 to-coffee-900 rounded-2xl p-8 text-white break-inside-avoid">
-         <div className="flex items-center gap-3 mb-6"><Globe size={24} className="text-coffee-200" /><h3 className="text-2xl font-brand font-bold uppercase">Nature vs. Nurture</h3></div>
-         <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-               <h4 className="text-lg font-bold text-coffee-100 mb-2 border-b border-coffee-700 pb-2">Country of Origin (Nature)</h4>
-               <p className="text-coffee-200 text-sm mb-4 leading-relaxed">DNA of the coffee. Potential flavors.</p>
-            </div>
-            <div>
-               <h4 className="text-lg font-bold text-coffee-100 mb-2 border-b border-coffee-700 pb-2">Roast Profile (Nurture)</h4>
-               <p className="text-coffee-200 text-sm mb-4 leading-relaxed">Expression of flavors.</p>
-            </div>
-         </div>
-      </div>
-    </div>
-);
-
 const LatteArtView: React.FC<{ 
     handleSaveItem: (item: FavoriteItem) => void; 
     savedItems: FavoriteItem[];
@@ -371,6 +314,8 @@ const LatteArtView: React.FC<{
 };
 
 // --- Main App Component ---
+
+import { Printer } from 'lucide-react'; // Import Printer for inline components if needed
 
 const App = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
