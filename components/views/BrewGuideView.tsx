@@ -5,8 +5,9 @@ import * as GeminiService from '../../services/geminiService';
 import BrewTimer from '../BrewTimer';
 import BrewMethodDiagram from '../BrewMethodDiagram';
 import BeanSelector from '../BeanSelector';
-import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Film, Loader2, Play, Sliders, Printer, Sparkles, MessageSquare } from 'lucide-react';
+import { Coffee, Droplets, Thermometer, Wind, Scale, Info, X, FlaskConical, Heart, Loader2, Play, Sliders, Printer, Sparkles, MessageSquare } from 'lucide-react';
 import { ensureApiKey } from '../../utils/auth';
+import { formatTime } from '../../utils/formatTime';
 
 interface BrewGuideViewProps {
   profile: CoffeeProfile;
@@ -65,12 +66,16 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
   };
 
   const handleGenerateRecipeVideo = async () => {
-    if (!recipe || !selectedMethodId) return;
+    // Recipes loaded from History/Favorites never went through this view's method
+    // picker, so selectedMethodId is null for them; derive the method from the
+    // recipe itself or Generate Video silently does nothing.
+    const methodId = selectedMethodId ?? BREW_METHODS.find(m => m.name === recipe?.method)?.id ?? null;
+    if (!recipe || !methodId) return;
     if (!(await ensureApiKey())) return;
 
     setIsGeneratingRecipeVideo(true);
     try {
-        const method = BREW_METHODS.find(m => m.id === selectedMethodId);
+        const method = BREW_METHODS.find(m => m.id === methodId);
         // Fallback to a safe coffee image from Unsplash if method image is missing
         const safeFallback = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80';
         const response = await fetch(method?.image || safeFallback);
@@ -121,12 +126,6 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
 
   const navigateToVideoStudioWithRecipe = () => {
     setCurrentView(View.VIDEO_STUDIO);
-  };
-
-  const formatTime = (totalSeconds: number) => {
-    const m = Math.floor(totalSeconds / 60);
-    const s = totalSeconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   // Render Helpers
@@ -383,7 +382,7 @@ const BrewGuideView: React.FC<BrewGuideViewProps> = ({
               <div className="p-6 bg-coffee-50 rounded-2xl border border-coffee-100 flex flex-col items-center justify-center text-center">
                   <h3 className="text-coffee-600 font-bold uppercase tracking-widest text-xs mb-6">Equipment Setup</h3>
                   <div className="w-48 h-48 mb-4">
-                      <BrewMethodDiagram methodId={selectedMethodId} />
+                      <BrewMethodDiagram methodId={selectedMethodId ?? BREW_METHODS.find(m => m.name === recipe?.method)?.id ?? null} />
                   </div>
                   <p className="text-coffee-500 text-xs max-w-sm">Ensure your equipment is clean and pre-heated.</p>
               </div>

@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { View, CoffeeProfile, Recipe, FavoriteItem, LatteArtPattern } from './types';
-import { LATTE_ART_PATTERNS } from './constants';
-import * as GeminiService from './services/geminiService';
+import { View, CoffeeProfile, Recipe, FavoriteItem } from './types';
 import useLocalStorage from './hooks/useLocalStorage';
-import { ensureApiKey } from './utils/auth';
 
 // Components
 import Header from './components/Header';
@@ -16,15 +13,15 @@ import HistoryView from './components/views/HistoryView';
 import FavoritesView from './components/views/FavoritesView';
 import FlavorExplorerView from './components/views/FlavorExplorerView';
 import LatteArtView from './components/views/LatteArtView';
-import BeanSelector from './components/BeanSelector';
-import RoastingDiagram from './components/RoastingDiagram'; // Keep RoastingDiagram if it's used in RoastingView inline, or extract RoastingView
 
-// Lucide Icons
-import { Sparkles, BookOpen, Loader2, Heart, Trash2, ArrowRight, Droplets, Palette, Calendar, ChevronLeft, Film, Play } from 'lucide-react';
-
-// --- Main App Component ---
-
-import { Printer } from 'lucide-react'; // Import Printer for inline components if needed
+// Strip the saved-item metadata when a favorite is turned back into a plain
+// recipe (replaces rest-destructuring with unused _/__ bindings).
+const omitSavedMeta = (r: Recipe): Recipe => {
+  const copy: Record<string, unknown> = { ...(r as unknown as Record<string, unknown>) };
+  delete copy.id;
+  delete copy.dateSaved;
+  return { ...copy, type: 'recipe' } as unknown as Recipe;
+};
 
 const App = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
@@ -80,11 +77,9 @@ const App = () => {
       
       // Update local state if currently viewing the deleted item
       if (recipe && recipe.id === id) {
-          const { id: _, dateSaved: __, ...rest } = recipe;
-          setRecipe({ ...rest, type: 'recipe' } as Recipe);
+          setRecipe(omitSavedMeta(recipe));
           if (originalRecipe) {
-             const { id: _, dateSaved: __, ...origRest } = originalRecipe;
-             setOriginalRecipe({ ...origRest, type: 'recipe' } as Recipe);
+             setOriginalRecipe(omitSavedMeta(originalRecipe));
           }
       }
   };

@@ -11,15 +11,19 @@ interface FlavorExplorerViewProps {
 
 const FlavorExplorerView: React.FC<FlavorExplorerViewProps> = ({ profile, setProfile }) => {
     const [flavorExplanation, setFlavorExplanation] = useState<string | null>(null);
+    const [explainError, setExplainError] = useState<string | null>(null);
     const [isExplaining, setIsExplaining] = useState(false);
 
     const handleExplainFlavor = async () => {
         setIsExplaining(true);
+        setExplainError(null);
         try {
           const text = await GeminiService.explainFlavorProfile(profile);
           setFlavorExplanation(text);
         } catch (e) {
           console.error(e);
+          // Previously the failure was console-only: the button appeared to do nothing.
+          setExplainError("Couldn't analyze this profile. Check your connection/API key and try again.");
         } finally {
           setIsExplaining(false);
         }
@@ -38,6 +42,11 @@ const FlavorExplorerView: React.FC<FlavorExplorerViewProps> = ({ profile, setPro
                     {isExplaining ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />} Analyze Profile
                     </button>
                 </div>
+                {explainError && (
+                    <div className="mb-8 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm text-center">
+                        {explainError}
+                    </div>
+                )}
             </div>
             {flavorExplanation && (
                 <div className="bg-white rounded-2xl shadow-sm border border-coffee-100 p-8 animate-fade-in">

@@ -12,13 +12,18 @@ function useLocalStorage<T>(key: string, initialValue: T) {
   });
 
   const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error);
-    }
+    // Compute from React's updater argument, not the render-closure storedValue:
+    // two setValue calls batched in one tick used the same stale base and the
+    // first update was silently dropped.
+    setStoredValue(prev => {
+      const valueToStore = value instanceof Function ? value(prev) : value;
+      try {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      } catch (error) {
+        console.warn(`Error setting localStorage key "${key}":`, error);
+      }
+      return valueToStore;
+    });
   };
 
   return [storedValue, setValue] as const;

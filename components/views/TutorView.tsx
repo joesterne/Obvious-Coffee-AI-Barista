@@ -7,6 +7,7 @@ const TutorView: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [isChatting, setIsChatting] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleChatSend = async () => {
@@ -15,14 +16,18 @@ const TutorView: React.FC = () => {
     setChatHistory(prev => [...prev, userMsg]);
     setChatInput('');
     setIsChatting(true);
+    setChatError(null);
 
     try {
+      // Prior history only: getTutorResponse passes this array as the chat
+      // history AND sends userMsg.content via sendMessage — including the new
+      // message in the array sent the user's text to the model twice.
       const apiHistory = chatHistory.map(m => ({ role: m.role, content: m.content }));
-      apiHistory.push({ role: 'user', content: userMsg.content });
       const responseText = await GeminiService.getTutorResponse(apiHistory, userMsg.content);
       setChatHistory(prev => [...prev, { role: 'model', content: responseText, timestamp: Date.now() }]);
     } catch (e) {
       console.error(e);
+      setChatError("The tutor couldn't respond. Check your connection and try again.");
     } finally {
       setIsChatting(false);
     }
@@ -69,7 +74,13 @@ const TutorView: React.FC = () => {
            )}
            <div ref={chatEndRef} />
         </div>
-        
+
+        {chatError && (
+          <div className="mx-4 mb-2 p-3 rounded-xl bg-red-50 border border-red-100 text-red-700 text-sm">
+            {chatError}
+          </div>
+        )}
+
         <div className="p-4 border-t border-coffee-100 bg-coffee-50/50">
            <div className="flex gap-2">
              <input

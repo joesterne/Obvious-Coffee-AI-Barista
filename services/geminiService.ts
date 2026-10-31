@@ -101,10 +101,13 @@ export const getTutorResponse = async (history: {role: string, content: string}[
   });
 
   const result = await chat.sendMessage({ message });
-  return result.text;
+  // result.text isn't guaranteed; an undefined return rendered as an empty bubble.
+  return result.text || "Sorry, I couldn't generate a response.";
 };
 
 // --- Video Generation ---
+
+let lastVideoObjectUrl: string | null = null;
 
 const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -139,8 +142,14 @@ export const generateBrewVideo = async (imageSource: Blob | null, prompt: string
 
   let operation = await veoAi.models.generateVideos(generationConfig);
 
-  // Poll for completion
+  // Poll for completion, with a deadline: a stuck operation used to spin this
+  // loop (and the caller's loading spinner) forever.
+  const MAX_POLLS = 60; // ~5 minutes at 5s intervals
+  let polls = 0;
   while (!operation.done) {
+    if (++polls > MAX_POLLS) {
+      throw new Error("Video generation timed out. Please try again.");
+    }
     await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5s
     operation = await veoAi.operations.getVideosOperation({operation: operation});
   }
@@ -153,5 +162,9 @@ export const generateBrewVideo = async (imageSource: Blob | null, prompt: string
   if (!videoResponse.ok) throw new Error("Failed to download generated video.");
   
   const blob = await videoResponse.blob();
-  return URL.createObjectURL(blob);
+  // Callers overwrite their video state with each new URL; revoke the previous
+  // blob URL here so generations don't leak one URL apiece for the page's life.
+  if (lastVideoObjectUrl) URL.revokeObjectURL(lastVideoObjectUrl);
+  lastVideoObjectUrl = URL.createObjectURL(blob);
+  return lastVideoObjectUrl;
 };

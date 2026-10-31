@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Recipe, BrewStep } from '../types';
 import { Play, Pause, RefreshCw, CheckCircle, ArrowRight, Volume2, VolumeX } from 'lucide-react';
+import { formatTime } from '../utils/formatTime';
 
 interface BrewTimerProps {
   recipe: Recipe;
@@ -82,20 +83,18 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
   };
 
   useEffect(() => {
-    let interval: number | undefined;
-
-    if (isActive) {
-      interval = window.setInterval(() => {
-        setSeconds((seconds) => seconds + 1);
-      }, 1000);
-    } else if (!isActive && seconds !== 0) {
-      clearInterval(interval);
-    }
-
+    if (!isActive) return;
+    const interval = window.setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [isActive, seconds]);
+  }, [isActive]);
 
   useEffect(() => {
+    // The AI recipe schema doesn't guarantee any steps; the last-step math below
+    // dereferenced steps[-1] and crashed the timer for an empty recipe.
+    if (recipe.steps.length === 0) return;
+
     // Find active step based on time
     let activeIndex = -1;
     for (let i = 0; i < recipe.steps.length; i++) {
@@ -146,17 +145,6 @@ const BrewTimer: React.FC<BrewTimerProps> = ({ recipe, onReset }) => {
     setIsActive(false);
     setIsFinished(false);
     setCurrentStepIndex(0);
-  };
-
-  const formatTime = (totalSeconds: number) => {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-
-    if (h > 0) {
-      return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   const currentStep = recipe.steps[currentStepIndex];
